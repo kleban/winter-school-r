@@ -1,10 +1,14 @@
 ## My sample
 library(gapminder)
 
-gapminder |> head(n = 15)
+data <- gapminder
 
-wide_data <- gapminder %>% select(country, lifeExp, year) %>%
+View(data)
+
+wide_data <- data |>
+  select(country, lifeExp, year) |>
   spread(year, lifeExp)
+
 View(wide_data)
 
 
@@ -40,11 +44,6 @@ interviews %>%
 
 # Це довгий формат даних
 
-# Хочемо сформувати таблицю за титом товварів у власності
-
-interviews %>%
-  select(items_owned) %>%
-  distinct()
 
 ## to LONG -> key_id repeating
 interviews_items_owned <- interviews %>%
@@ -90,7 +89,9 @@ interviews_long <- interviews_items_owned %>%
                values_to = "items_owned_logical")
 View(interviews_long)
 
-
+interviews_long <- interviews_long |> 
+  filter(items_owned_logical)
+View(interviews_long)
 
 ## Візуалізація даних ##
 interviews_plotting <- interviews %>%

@@ -37,7 +37,7 @@ filter(interviews, village == "Chirodzo" &
 # filters observations with "|" logical operator
 # output dataframe satisfies AT LEAST ONE of the specified conditions
 filter(interviews, village == "Chirodzo" | village == "Ruaca")
-
+filter(interviews, village %in% c("Chirodzo", "Ruaca"))
 
 ## Slide pipe
 
@@ -68,7 +68,7 @@ interviews %>%
 interviews %>%
   mutate(people_per_room = no_membrs / rooms)
 
-### only not NA
+### people per room who give info about associationa / only not NA
 interviews %>%
   filter(!is.na(memb_assoc)) %>%
   mutate(people_per_room = no_membrs / rooms)
@@ -84,10 +84,10 @@ interviews %>%
   group_by(village, memb_assoc) %>%
   summarize(mean_no_membrs = mean(no_membrs))
 
-interviews %>%
-  group_by(village, memb_assoc) %>%
-  summarize(mean_no_membrs = mean(no_membrs)) %>%
-  ungroup()
+#interviews %>%
+ # group_by(village, memb_assoc) %>%
+ # summarize(mean_no_membrs = mean(no_membrs)) %>%
+ # ungroup()
 
 ## exclude memb_assoc NA
 interviews %>%
@@ -127,3 +127,28 @@ interviews %>%
 interviews %>%
   count(village, sort = TRUE)
 
+# CHALLANGES
+## 1
+interviews %>%
+  count(no_meals)
+
+## 2 - check answer only
+interviews %>%
+  group_by(village) %>%
+  summarize(
+    mean_no_membrs = mean(no_membrs),
+    min_no_membrs = min(no_membrs),
+    max_no_membrs = max(no_membrs),
+    n = n()
+  )
+
+## 3 - check answer only
+library(lubridate) # load lubridate if not already loaded
+interviews %>%
+  mutate(month = month(interview_date),
+         day = day(interview_date),
+         year = year(interview_date)) %>%
+  group_by(year, month) %>%
+  summarize(max_no_membrs = max(no_membrs))
+
+## -------

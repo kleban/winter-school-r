@@ -1,0 +1,170 @@
+---
+title: "Exploratory Data Analysis of SAFI Survey Data"
+author: "Short Analytical Report"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## 1. Data description
+
+This report provides a short exploratory data analysis (EDA) of the **SAFI survey dataset**.
+
+**Unit of observation:** each row represents one household.
+
+**Variables:** columns contain household characteristics, location identifiers, food consumption indicators, agricultural information, and related survey attributes.
+
+**Goal of EDA:** quickly check the structure of the data, basic numeric distributions, missingness, and a few simple relationships using `dplyr` for selection/filtering and `ggplot2` for plots.
+
+---
+
+## 2. Data loading
+
+```{r load-packages}
+library(dplyr)
+library(ggplot2)
+library(readr)
+```
+
+```{r load-data}
+# If SAFI_clean.csv is in the same folder as this .Rmd
+safi <- read_csv("data/SAFI_clean.csv")
+```
+
+```{r data-structure}
+# Data structure: column names, types, and example values
+# This helps confirm that the dataset is loaded correctly.
+glimpse(safi)
+```
+
+**Explanation (table output):** `glimpse()` prints the number of rows/columns, each column’s type, and sample values. This is a fast check for data types (numeric vs character), and for spotting obviously broken columns.
+
+---
+
+## 3. Basic numeric summary
+
+```{r summary-stats}
+# Summary for numeric variables (min/median/mean/max, NA counts implicitly visible)
+safi %>%
+  select(where(is.numeric)) %>%
+  summary()
+```
+
+**Explanation (table output):** this summary provides quick descriptive statistics for numeric variables.
+Use it to spot unrealistic values (e.g., negative counts) and to understand overall ranges before plotting.
+
+---
+
+## 4. Missing values overview
+
+```{r missing-values}
+# Top variables by number of missing values
+# (Requires tidyr only for pivoting the output into a long table)
+library(tidyr)
+
+safi %>%
+  summarise(across(
+    everything(),
+    ~ sum(is.na(.))
+  )) %>%
+  pivot_longer(
+    cols = everything(),
+    names_to = "variable",
+    values_to = "missing_count"
+  ) %>%
+  arrange(desc(missing_count)) %>%
+  head(10)
+```
+
+**Explanation (table output):** this table ranks variables by missingness.
+It helps identify which columns may need cleaning, imputation, or removal depending on the analysis goal.
+
+---
+
+## 5. Exploratory charts
+
+### 5.1 Household size distribution
+
+```{r household-size-plot}
+# Distribution plot: shows how household sizes are spread across the sample
+safi %>%
+  filter(!is.na(no_membrs)) %>%
+  ggplot(aes(x = no_membrs)) +
+  geom_histogram(binwidth = 1) +
+  labs(
+    title = "Distribution of Household Size",
+    x = "Number of household members (no_membrs)",
+    y = "Count of households"
+  )
+```
+
+**Explanation (chart):** a histogram shows the frequency of households by size.
+This helps answer questions like “What is a typical household size?” and whether there are outliers (very large households).
+
+---
+
+### 5.2 Meals per day (food consumption indicator)
+
+```{r meals-plot}
+# Bar chart: counts how many households reported each meals-per-day value
+safi %>%
+  filter(!is.na(no_meals)) %>%
+  ggplot(aes(x = no_meals)) +
+  geom_bar() +
+  labs(
+    title = "Number of Meals per Day",
+    x = "Meals per day (no_meals)",
+    y = "Number of households"
+  )
+```
+
+**Explanation (chart):** a bar chart is appropriate for discrete values like meals per day.
+It shows the most common meal counts (e.g., 2 or 3) and whether uncommon values appear.
+
+---
+
+### 5.3 Household size vs meals per day
+
+```{r hh-meals-scatter}
+# Relationship plot: checks whether larger households tend to report different meals/day
+# Jitter adds small random noise to reduce overlap of identical points
+safi %>%
+  filter(!is.na(no_membrs), !is.na(no_meals)) %>%
+  ggplot(aes(x = no_membrs, y = no_meals)) +
+  geom_jitter(width = 0.2, height = 0.1, alpha = 0.6) +
+  labs(
+    title = "Household Size vs. Meals per Day",
+    x = "Household size (no_membrs)",
+    y = "Meals per day (no_meals)"
+  )
+```
+
+**Explanation (chart):** this plot checks whether meals per day change with household size.
+If points show clear patterns (e.g., meals decreasing as household size increases), it may suggest constraints related to food access.
+If the points are mixed without a trend, the relationship may be weak or require additional variables (e.g., income, location) to explain.
+
+---
+
+## 6. Short findings
+
+- **Household size** varies across the dataset; the histogram indicates typical sizes and highlights any extreme values.
+- **Meals per day** is mostly concentrated in a small set of categories, which makes it a simple proxy for food consumption conditions.
+- The **household size vs meals** scatter does not necessarily imply causality; it is a quick check for visible association only.
+
+---
+
+## 7. Conclusion
+
+This short EDA confirms the dataset loads correctly, provides a first look at distributions, missingness, and basic relationships.
+Possible next steps include:
+
+- comparing key indicators across villages/regions,
+- building a simple food security index,
+- modelling meals per day as a function of household and location factors.

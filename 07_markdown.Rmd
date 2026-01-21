@@ -1,0 +1,96 @@
+---
+title: "SAFI Report"
+author: "Yurii Kleban"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+interviews <- read_csv(here("data/SAFI_clean.csv"), na = "NULL")
+```
+
+## Introduction
+
+This report uses the **tidyverse** package along with the *SAFI* dataset,
+which has columns that include:
+
+- village
+  + Name of village
+- interview_date
+  + Date of interview
+- no_members
+  + How many family members lived in a house
+- years_liv
+  + How many years respondent has lived in village or neighbouring village
+- respondent_wall_type
+  + Type of wall of house
+- rooms
+  + Number of rooms in house
+
+
+```{r, echo=F, warning=F, message=F}
+interviews %>%
+    filter(!is.na(memb_assoc)) %>%
+    group_by(village, memb_assoc) %>%
+    summarize(mean_no_membrs = mean(no_membrs)) %>%
+  knitr::kable(caption = "We can also add a caption.", 
+               col.names = c("Village", "Member Association", 
+                             "Mean Number of Members"))
+```
+
+
+```{r echo=F}
+mean_household <- interviews %>%
+    group_by(village) %>%
+    summarize(mean_no_membrs = mean(no_membrs))
+
+mean_household
+```
+
+```{r echo=F}
+mean_chirodzo <- mean_household %>%
+  filter(village == "Chirodzo")
+```
+
+The average household size in the village of Chirodzo is `r round(mean_chirodzo$mean_no_membrs, 2)`.
+
+```{r}
+interviews_plotting <- read_csv("data_output/interviews_plotting.csv")
+
+percent_items <- interviews_plotting %>%
+  group_by(village) %>%
+  summarize(across(bicycle:no_listed_items, ~ sum(.x) / n() * 100)) %>%
+  pivot_longer(bicycle:no_listed_items, names_to = "items", values_to = "percent")
+percent_items
+```
+
+```{r}
+library(ggthemes)
+percent_items %>%
+  ggplot(aes(x = village, y = percent, fill = village)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~ items) +
+  labs(title = "Percent of respondents in each village who owned each item",
+       x = "Village",
+       y = "Percent of Respondents") +
+  theme_excel_new() +
+  scale_fill_excel_new()
+```
+
+Some text
+
+```{r my-image-chunk, echo=FALSE, fig.cap="A lovely London skyline.", out.width="70%", fig.align="center"}
+knitr::include_graphics("images/safi.png")
+```
+
+![ddd](images/safi.png)
+
+![ddd](https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?q=80&w=1176&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)
+
+---
+&copy; Yurii Kleban 2025

@@ -15,6 +15,7 @@ x.df <- 4
 2.47 * area_hectares
 
 area_hectares <- 2.5
+
 2.47 * area_hectares
 
 area_acres <- 2.47 * area_hectares
@@ -54,10 +55,12 @@ round(b, digits = 2)
 
 ?round
 
-## Vectors and data types
+## Vectors and data types - slide!
 ## hh - household members - номери жителів
 hh_members <- c(3, 7, 10, 6)
 hh_members
+
+x <- 
 
 # muddaub — саман, цегла з глини або грязі, висушена на сонці
 # burnt bricks — цегла, обпалена у печі для міцності

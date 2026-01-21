@@ -28,6 +28,9 @@ str(interviews)
 summary(interviews)
 glimpse(interviews)
 
+library(psych)
+psych::describe(interviews$years_liv)
+
 ## Subsetting data frames
 ## first element in the first column of the tibble
 interviews[1, 1]
@@ -50,7 +53,7 @@ interviews[3, ]
 ## equivalent to head_interviews <- head(interviews)
 head_interviews <- interviews[1:6, ]
 
-interviews[, -1]          # The whole tibble, except the first column
+interviews[, -3]          # The whole tibble, except the first column
 
 interviews["village"]       # Result is a tibble
 
@@ -60,6 +63,7 @@ interviews[["village"]]     # Result is a vector
 
 interviews$village          # Result is a vector
 
+## CHALLENAGE
 #-----------------------------
 # FACTORS
 
@@ -123,6 +127,7 @@ as_date(char_dates, format = "%m/%d/%Y")
 
 as_date(char_dates, format = "%m/%d/%y") #Y for year
 
+??lubridate
 ymd(char_dates)
 dmy(char_dates)
 mdy(char_dates)
